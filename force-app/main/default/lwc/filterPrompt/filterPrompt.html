@@ -1,0 +1,29 @@
+<template>
+	<lightning-card>
+		<div class="slds-m-around_medium">
+			<lightning-input label="Compatibility"></lightning-input>
+			<lightning-input label="Product Line"></lightning-input>
+			<lightning-combobox name="packaging" label="Packaging" value={comboBoxValue} options={comboBoxOptions}
+				onchange={onChangeHandler}>
+			</lightning-combobox>
+	
+			<lightning-button label="Display product" onclick={imperativeApex}></lightning-button>
+			<p> Product Display test:  </p>
+			<template if:true={productList}>
+					<div class="slds-grid slds-wrap slds-grid_align-space ">
+					<template for:each={productList} for:item="item">
+						<div key={item.id} class="slds-col slds-grow-none" style="width: 100px; word-wrap: break-word">
+							<p class="slds-m-bottom_medium slds-align_absolute-center" style="font-size: x-small"> {item.name}</p>
+							<image class="slds-align_absolute-center" src={item.defaultImage.url} alt="phone case"></image>
+						
+						</div>
+					</template>
+				</div>
+			</template>
+			
+			
+          
+        
+		</div>
+	</lightning-card>
+</template>

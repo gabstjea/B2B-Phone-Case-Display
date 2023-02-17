@@ -41,8 +41,11 @@ public without sharing class ProductPageController {
      * @param searchKey - the literals used to generate a search result
      */
     @AuraEnabled(cacheable=false)
-    public static List<ConnectApi.ProductSummary> getProductList(String searchKey) {
-        String webstoreId = '0ZEDn000000HehLOAS';
+    public static List<ConnectApi.ProductSummary> getProductList(String communityId, String searchKey) {
+        // String webstoreId = '0ZEDn000000HehLOAS';
+         String webstoreId = B2BUtils.resolveCommunityIdToWebstoreId(
+            communityId
+        );
         ConnectApi.ProductSearchInput input = new ConnectApi.ProductSearchInput();
         input.searchTerm = searchKey;
         ConnectApi.ProductSearchResults res = ConnectApi.CommerceSearch.searchProducts(webstoreId, null, input);

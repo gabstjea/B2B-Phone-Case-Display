@@ -14,7 +14,7 @@ export default class FilterPrompt extends LightningElement {
     comboBoxValue = "proPack";
 
     imperativeApex() {
-      getProductList({searchKey: this.searchKey})
+      getProductList({communityId: communityId, searchKey: this.searchKey})
             .then(r => {this.productList = r})
             .catch(e => {this.error = e});
     } 

@@ -1,19 +1,20 @@
 import { LightningElement, wire, api, track } from 'lwc';
 import communityId from '@salesforce/community/Id';
 import getProductList from '@salesforce/apex/ProductPageController.getProductList';
-import userInfo from '@salesforce/apex/ProductPageController.userInfo';
 
 
 export default class FilterPrompt extends LightningElement {
     //@wire(getProductList) productList;
     @track productList;
     @track error;
-    @wire(userInfo) userInfoList;
+    searchKey;
+    compatibility;
+    productLine;
 
     comboBoxValue = "proPack";
 
     imperativeApex() {
-      getProductList()
+      getProductList({searchKey: this.searchKey})
             .then(r => {this.productList = r})
             .catch(e => {this.error = e});
     } 
@@ -26,9 +27,17 @@ export default class FilterPrompt extends LightningElement {
       ];
     }
 
-
     onChangeHandler(event) {
-      this.comboBoxValue = event.detail.value;
+      const tagName = event.target.name;
+      if (tagName === "searchKey") {
+        this.searchKey = event.target.value;
+      } else if (tagName === "compatibility") {
+        this.compatibility = event.target.value;
+      } else if (tagName === "productLine") {
+        this.productLine = event.target.value;
+      } else if (tagName === "packaging") {
+        this.comboBoxValue = event.detail.value;
+      }
     } // onChangeHandler
 
     connectedCallback() {

@@ -1,8 +1,9 @@
 <template>
 	<lightning-card>
 		<div class="slds-m-around_medium">
-			<lightning-input label="Compatibility"></lightning-input>
-			<lightning-input label="Product Line"></lightning-input>
+			<lightning-input name="searchKey" label="Search Key" onchange={onChangeHandler} ></lightning-input>
+			<lightning-input name="compatibility" label="Compatibility"></lightning-input>
+			<lightning-input name="productLine" label="Product Line"></lightning-input>
 			<lightning-combobox name="packaging" label="Packaging" value={comboBoxValue} options={comboBoxOptions}
 				onchange={onChangeHandler}>
 			</lightning-combobox>

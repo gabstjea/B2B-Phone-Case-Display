@@ -1,12 +1,17 @@
-// List<User> usr = new List<User>([SELECT id, username, name, accountId FROM User WHERE id = '005Dn000006IdH1IAK']);
-// List<Account> act = new List<Account>([SELECT id, type FROM Account WHERE id = '001Dn00000INKzOIAX']);
-// System.debug(usr);
-// System.debug(act);
-
-// find user ID
-// query contact id from user record
-// query assoicated account on the contact record
-// only works for portal users so pass null for not
+// This class utilizes Connect Apex to integrate search results from a B2B Commerce store
+// 
+// Important parameters:
+// communityId - the ID of the experience cloud site that the context user is accessing
+// webstoreId - the ID of the webstore being accessed by the User
+//     * To obtain manually:
+//         - Go to the store's workspace on the Lightning platform
+//         - Copy the ID in the URL
+// effectiveAccountId - the ID of the account for which the request is made. If null, defaults to the account ID
+//                      of the context user.
+//     * To get effective AccountId:
+//         - Get the ID of User with UserInfo.getUserId()
+//         - Query the account with matching user ID
+//                        
 
 public without sharing class ProductPageController {
     
@@ -27,26 +32,19 @@ public without sharing class ProductPageController {
 		System.debug('ProductSearchResults = ' + results.toString());
     }
     
-  	@AuraEnabled(cacheable=true)
-    public static List<String> userInfo() {
-        //List<Account> acct = [SELECT id FROM Account WHERE id =: UserInfo.getUserID()];
-        List<String> strList = new List<String> {
-            'User Id: ' + UserInfo.getUserId(),
-            'User Type: ' + UserInfo.getUserType(),
-            'User Role Id: ' + UserInfo.getUserRoleId(),
-            'User userName: ' + UserInfo.getUserName(),
-            'User name: ' + UserInfo.getName(),
-            'User email: ' + UserInfo.getUserEmail()
-        };
-       System.debug(strList);
-       return strList;
-    }
+ 
     
+    /**
+     * Returns a list of products from a B2B store's search index.
+     * 
+     * @param communityId - the ID of the experience cloud site that the context user is accessing
+     * @param searchKey - the literals used to generate a search result
+     */
     @AuraEnabled(cacheable=false)
-    public static List<ConnectApi.ProductSummary> getProductList() {
+    public static List<ConnectApi.ProductSummary> getProductList(String searchKey) {
         String webstoreId = '0ZEDn000000HehLOAS';
         ConnectApi.ProductSearchInput input = new ConnectApi.ProductSearchInput();
-        input.searchTerm = 'samsung';
+        input.searchTerm = searchKey;
         ConnectApi.ProductSearchResults res = ConnectApi.CommerceSearch.searchProducts(webstoreId, null, input);
         for (ConnectApi.ProductSummary s : res.productsPage.products) {
             System.debug(s.id);

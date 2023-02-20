@@ -15,24 +15,7 @@
 
 public without sharing class ProductPageController {
     
-    public static void refinement() {
-        ConnectApi.ProductSearchInput sInput = new ConnectApi.ProductSearchInput();
-		sInput.searchTerm = 'coffee';
-		ConnectApi.DistinctValueRefinementInput rInput = new ConnectApi.DistinctValueRefinementInput();
-		rInput.attributeType = ConnectApi.CommerceSearchAttributeType.Custom;
-		rInput.nameOrId = 'Size__c';
-		List<String> values = new List<String>();
-		values.add('L');
-		rInput.values = values;
-		List<ConnectApi.RefinementInput> refinementInputs = new List<ConnectApi.RefinementInput>();
-		refinementInputs.add(rInput);
-		sInput.refinements = refinementInputs;
-		ConnectApi.ProductSearchResults results = ConnectApi.CommerceSearch.searchProducts(
-  		  '0ZEDn000000HehLOAS', null, sInput);
-		System.debug('ProductSearchResults = ' + results.toString());
-    }
-    
- 
+    public static ConnectApi.ProductSearchResults res;
     
     /**
      * Returns a list of products from a B2B store's search index.
@@ -43,16 +26,34 @@ public without sharing class ProductPageController {
     @AuraEnabled(cacheable=false)
     public static List<ConnectApi.ProductSummary> getProductList(String communityId, String searchKey) {
         // String webstoreId = '0ZEDn000000HehLOAS';
-         String webstoreId = B2BUtils.resolveCommunityIdToWebstoreId(
-            communityId
-        );
+        // CommunityID = '0DBDn000000kDqvOAE';
+        String webstoreId = B2BUtils.resolveCommunityIdToWebstoreId(communityId);
         ConnectApi.ProductSearchInput input = new ConnectApi.ProductSearchInput();
         input.searchTerm = searchKey;
-        ConnectApi.ProductSearchResults res = ConnectApi.CommerceSearch.searchProducts(webstoreId, null, input);
-        for (ConnectApi.ProductSummary s : res.productsPage.products) {
-            System.debug(s.id);
-        } // for
+        res = ConnectApi.CommerceSearch.searchProducts(webstoreId, null, input);
         return res.productsPage.products;
     } // getProductList
+    
+    /**
+     * Adds refinements to a search key so that it can return a filtered list of results. 
+     */
+    private static void filterSearch() {
+        ConnectApi.ProductSearchInput searchKey = new ConnectApi.ProductSearchInput();
+		searchKey.searchTerm = 'iPhone';
+		ConnectApi.DistinctValueRefinementInput rInput = new ConnectApi.DistinctValueRefinementInput();
+		rInput.attributeType = ConnectApi.CommerceSearchAttributeType.Custom;
+		rInput.nameOrId = 'Color__c';
+        List<String> values = new List<String> {'Black'};
+		rInput.values = values;
+		List<ConnectApi.RefinementInput> rInputList = new List<ConnectApi.RefinementInput>();
+		rInputList.add(rInput);
+		searchKey.refinements = rInputList;
+		res = ConnectApi.CommerceSearch.searchProducts('0ZEDn000000HehLOAS', null, searchKey);
+		System.debug('ProductSearchResults = ' + res.toString());
+         for (ConnectApi.ProductSummary s : res.productsPage.products) {
+            System.debug('name: ' + s.name);
+            System.debug('fields: ' + s.fields);
+        } // for
+    } // filterSearch
     
 } // ConnectToProductPage

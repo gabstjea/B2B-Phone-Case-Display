@@ -1,4 +1,4 @@
-# This file is used for Git repositories to specify intentionally untracked files that Git should ignore. 
+# This file is used for Git repositories to specify intentionally untracked files that Git should ignore.
 # If you are not using git, you can delete this file. For more information see: https://git-scm.com/docs/gitignore
 # For useful gitignore templates see: https://github.com/github/gitignore
 
@@ -38,3 +38,10 @@ $RECYCLE.BIN/
 
 # Local environment variables
 .env
+
+force-app/main/default/classes/B2BCartControllerSample.cls
+force-app/main/default/classes/B2BCartControllerSample.cls-meta.xml
+force-app/main/default/classes/B2BGetInfo.cls
+force-app/main/default/classes/B2BGetInfo.cls-meta.xml
+force-app/main/default/classes/B2BSearchControllerSample.cls
+force-app/main/default/classes/B2BSearchControllerSample.cls-meta.xml

@@ -1,24 +1,75 @@
-import { LightningElement, wire, api, track } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
 import communityId from '@salesforce/community/Id';
-import getProductList from '@salesforce/apex/ProductPageController.getProductList';
+import getSearchResults from '@salesforce/apex/ProductPageController.getSearchResults';
+// import createFacetDisplay from '@salesforce/apex/ProductPageController.createFacetDisplay';
+import dummyFacetDisplay from '@salesforce/apex/ProductPageController.dummyFacetDisplay';
+import  filterProductDisplay from '@salesforce/apex/ProductPageController.filterProductDisplay';
 
+// This component serves as a testing ground for the product display and listing component
 
 export default class FilterPrompt extends LightningElement {
-    //@wire(getProductList) productList;
+   
     @track productList;
-    @track error;
-    searchKey;
+    @track facetDisplay; // Stores a deep copy of the List<FacetDisplay> object from the createFacetDisplay Apex method 
+    connectApiFacetResultsJson
+    @track activeAccordionSections = [];
+    categoryLandingPage = 'iPhone';
+    clpComboboxOptions =  [
+        {label: "iPhone", value: "iPhone"},
+        {label: "Samsung", value: "Samsung"},
+      ];
+
+    comboBoxValue = "proPack";
     compatibility;
     productLine;
 
-    comboBoxValue = "proPack";
+    map = new Map();;
+    test = [
+      {facetName: 'Color',
+       facetValues: ['blue', 'red']},
+       {facetName: 'Packaging',
+       facetValues: ['Pro-Pack', 'Retail']}];
 
-    imperativeApex() {
-      getProductList({communityId: communityId, searchKey: this.searchKey})
-            .then(r => {this.productList = r})
-            .catch(e => {this.error = e});
-    } 
 
+   imperativeApex() {
+         getSearchResults({communityId: communityId, categoryLandingPage: this.categoryLandingPage})
+            .then(r => {
+              this.productList = r.productsPage.products;
+              console.log(JSON.parse(JSON.stringify(this.productList)));
+              this.connectApiFacetResultsJson = r.facets; 
+              dummyFacetDisplay({connectApiFacetResultsJson: JSON.stringify(r.facets), categoryLandingPage: 'hi'})
+                .then(r => {
+                    // Create a deep copy of the server response 
+                    this.facetDisplay = JSON.parse(JSON.stringify(r));
+                    console.log(JSON.parse(JSON.stringify(this.facetDisplay)));
+                  
+                    // Expand the accordian section whose names appear in the array
+                    this.activeAccordionSections = [];
+                    for (let i = 0; i < this.facetDisplay.length; i++) {
+                      this.activeAccordionSections[i] = this.facetDisplay[i].facetName;
+                    }
+                })
+            })
+            .catch(e => {
+              console.log(e);
+            });
+    } // imperativeApex 
+
+    handleCheckBoxGroup(event) {
+      this.facetDisplay.filter(item => item.facetName === event.target.label)[0].selectedFacets = event.detail.value;
+      console.log(JSON.parse(JSON.stringify(this.facetDisplay)));
+      filterProductDisplay({communityId: communityId, categoryLandingPage: this.categoryLandingPage, 
+                            connectApiFacetResultsJson: JSON.stringify(this.connectApiFacetResultsJson), 
+                            facetDisplayJson: JSON.stringify(this.facetDisplay)})
+              .then(r => {
+                console.log(r);
+                this.productList = r;
+              })
+              .catch(e => {
+              console.log(e);
+              });
+    }
+  
 
     get comboBoxOptions() {
       return [
@@ -29,8 +80,8 @@ export default class FilterPrompt extends LightningElement {
 
     onChangeHandler(event) {
       const tagName = event.target.name;
-      if (tagName === "searchKey") {
-        this.searchKey = event.target.value;
+      if (tagName === "categoryLandingPage") {
+        this.categoryLandingPage = event.detail.value;
       } else if (tagName === "compatibility") {
         this.compatibility = event.target.value;
       } else if (tagName === "productLine") {

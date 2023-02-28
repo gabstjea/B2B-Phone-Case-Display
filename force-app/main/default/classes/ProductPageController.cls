@@ -1,17 +1,18 @@
-// This class utilizes Connect Apex to integrate search results from a B2B Commerce store
-// 
-// Important parameters:
-// communityId - the ID of the experience cloud site that the context user is accessing
-// webstoreId - the ID of the webstore being accessed by the User
-//     * To obtain manually:
-//         - Go to the store's workspace on the Lightning platform
-//         - Copy the ID in the URL
-// effectiveAccountId - the ID of the account for which the request is made. If null, defaults to the account ID
-//                      of the context user.
-//     * To get effective AccountId:
-//         - Get the ID of User with UserInfo.getUserId()
-//         - Query the account with matching user ID
-//                        
+/** 
+ * This class utilizes Connect Apex to integrate search results from a B2B Commerce store
+ * 
+ * Important parameters:
+ * communityId - the ID of the experience cloud site that the context user is accessing
+ * webstoreId - the ID of the webstore being accessed by the User
+ *     * To obtain manually:
+ *         - Go to the store's workspace on the Lightning platform
+ *         - Copy the ID in the URL
+ * effectiveAccountId - the ID of the account for which the request is made. If null, defaults to the account ID
+ *                      of the context user.
+ *     * To get effective AccountId:
+ *         - Get the ID of User with UserInfo.getUserId()
+ *         - Query the account with matching user ID
+*/                        
 
 public without sharing class ProductPageController {
         
@@ -33,25 +34,26 @@ public without sharing class ProductPageController {
         ConnectApi.ProductSearchResults searchResults = ConnectApi.CommerceSearch.searchProducts(webstoreId, null, input);
         return searchResults;
 	} // getSearchResults
-        
     
-    // Maps facet names (keys) to their Api names 
-    private static Map<String, JSON2ApexSearchFacet> createFacetResultsMap(String connectApiFacetResultsJson) {
+    /** Maps facet names (keys) to their Api names 
+     * 
+     * @param connectApiFacetResultsJson - the serialized ConnectApi.SearchFacet results from the product search results
+     */
+    private static Map<String, ConnectFacetResDeserializer> createFacetResultsMap(String connectApiFacetResultsJson) {
         // Recieved JSON parser errors when trying to cast directly into List<ConnectApi.SearchFacet>, so a custom class is used
-        List<JSON2ApexSearchFacet> facetResults = JSON2ApexSearchFacet.parse(connectApiFacetResultsJson);
-        Map<String, JSON2ApexSearchFacet> facetResultsMap = new Map<String, JSON2ApexSearchFacet>();
-        for (JSON2ApexSearchFacet facet : facetResults) {
+        List<ConnectFacetResDeserializer> facetResults = ConnectFacetResDeserializer.parse(connectApiFacetResultsJson);
+        Map<String, ConnectFacetResDeserializer> facetResultsMap = new Map<String, ConnectFacetResDeserializer>();
+        for (ConnectFacetResDeserializer facet : facetResults) {
             facetResultsMap.put(facet.displayName, facet);
 		}
         return facetResultsMap;
 	}
     
     /**
-     * Returns a map of the Api names used in the facet (IDs) and their associated picklist
-     * values as a concatenated string. 
+     * Returns a list of facet displays from the products within a category landing page.
      * 
-     * Method may be deprecarted if there is a method to retrieve the ConnectApi.ProductSearchResults as
-     * a parameter from the LWC.
+     * @param communityId - the ID of the experience cloud site that the context user is accessing
+     * @param categoryLandingPage - the literals used to generate a search result
      */
     @AuraEnabled(cacheable=false)
     public static List<FacetDisplay> createFacetDisplay(String communityId, String categoryLandingPage) {
@@ -95,8 +97,7 @@ public without sharing class ProductPageController {
     
     @AuraEnabled(cacheable=false)
     public static List<FacetDisplay> dummyFacetDisplay(String connectApiFacetResultsJson, String categoryLandingPage) {
-  		Map<String, JSON2ApexSearchFacet> facetResultsMap = createFacetResultsMap(connectApiFacetResultsJson);
-        System.debug(facetResultsMap);
+  	
         List<FacetDisplay> fdList = new List<FacetDisplay>();
     
         FacetDisplay brandFd = new FacetDisplay('Brand',
@@ -105,8 +106,8 @@ public without sharing class ProductPageController {
                                            });
         FacetDisplay productLineFd = new FacetDisplay('Product Line',
                                            new List<FacetValue> {
-                                               new FacetValue('Defender'),
-                                               new FacetValue('Commuter'),  
+                                               new FacetValue('Defender Series'),
+                                               new FacetValue('Commuter Series'),  
                                                new FacetValue('Lumen Series')
                                            });
      
@@ -143,30 +144,29 @@ public without sharing class ProductPageController {
     
    /**
      * Adds refinements to a search key so that it can return a filtered list of results. 
+     * 
+     * @param communityId - the ID of the experience cloud site that the context user is accessing
+     * @param categoryLandingPage - the literals used to generate a search result
+     * @param connectApiFacetResultsJson - the serialized ConnectApi.SearchFacet results from the product search results
+	 * @param facetDisplayJson - the list of facet display objects from the product filter list
      */
     @AuraEnabled(cacheable=false)
     public static List<ConnectApi.ProductSummary> filterProductDisplay(String communityId, String categoryLandingPage, 
                                                                        String connectApiFacetResultsJson, 
                                                                        String facetDisplayJson) {
-        List<FacetDisplay> facetDisplay = FacetDisplay.parseJson(facetDisplayJson);
-                                            
-     	Map<String, JSON2ApexSearchFacet> facetResultsMap = createFacetResultsMap(connectApiFacetResultsJson);
-        String webstoreId = B2BUtils.resolveCommunityIdToWebstoreId(communityId);        
+        List<FacetDisplay> facetDisplay = FacetDisplay.parseJson(facetDisplayJson);                      
+     	Map<String, ConnectFacetResDeserializer> facetResultsMap = createFacetResultsMap(connectApiFacetResultsJson);
+        String webstoreId = B2BUtils.resolveCommunityIdToWebstoreId(communityId);  
+        // Prepare the search results                                                                   
         ConnectApi.ProductSearchInput sInput = new ConnectApi.ProductSearchInput();
         ConnectApi.DistinctValueRefinementInput rInput;
-		List<ConnectApi.RefinementInput> rInputList = new List<ConnectApi.RefinementInput>();
-		List<String> filterList;
-       
-		sInput.searchTerm = categoryLandingPage; 
-        
+		List<ConnectApi.RefinementInput> rInputList = new List<ConnectApi.RefinementInput>();     
+		sInput.searchTerm = categoryLandingPage;     
         // Refine the search input
         for (FacetDisplay fd : facetDisplay) {
-            System.debug(fd);
             rInput = new ConnectApi.DistinctValueRefinementInput();
-            JSON2ApexSearchFacet facetInfo = facetResultsMap.get(fd.facetName);
-            String apiName = facetInfo.nameOrId;
-            String attributeType = facetInfo.attributeType;
-         
+            ConnectFacetResDeserializer facetInfo = facetResultsMap.get(fd.facetName);
+            String apiName = facetInfo.nameOrId;         
             if (facetInfo.attributeType == 'Custom') {
             	rInput.attributeType = ConnectApi.CommerceSearchAttributeType.Custom;
             } else if (facetInfo.attributeType == 'Standard') {
@@ -176,19 +176,14 @@ public without sharing class ProductPageController {
             } else {
                 rInput.attributeType = ConnectApi.CommerceSearchAttributeType.ProductCategory;
             }
-         
 			rInput.nameOrId = apiName;
-       	    filterList = new List<String>(fd.selectedFacets);
-			rInput.values = filterList;
+       	    List<String> valuesToRefine = new List<String>(fd.selectedFacets);
+			rInput.values = valuesToRefine;
 			rInputList.add(rInput);
-        }
-               
+        } // for
 		sInput.refinements = rInputList;
 		ConnectApi.ProductSearchResults rSearchResults = ConnectApi.CommerceSearch.searchProducts(webstoreId, null, sInput);
-
         return rSearchResults.productsPage.products;
     } // filterSearch
-
    
-   
-} // ConnectToProductPage
+} // ProductPageController

@@ -19,9 +19,7 @@ export default class FilterPrompt extends LightningElement {
         {label: "Samsung", value: "Samsung"},
       ];
     
-    selectedFacetDisplay;
-    uncheckedItem;
-    newlyAddedItem;
+    
     @track facetPillBox = [];
 
     comboBoxValue = "proPack";
@@ -36,12 +34,7 @@ export default class FilterPrompt extends LightningElement {
               this.productList = r.productsPage.products;
               console.log(JSON.parse(JSON.stringify(this.productList)));
               this.connectApiFacetResultsJson = r.facets; 
-              console.log( JSON.parse(JSON.stringify(this.facetPillBox.filter( e => e.name === 'Sam' &&  e.label !== 'hey: '))));
-
               this.facetPillBox = [];
-              this.selectedFacetDisplay = '';
-              this.uncheckedItem = '';
-              this.newlyAddedItem = '';
               dummyFacetDisplay({connectApiFacetResultsJson: JSON.stringify(r.facets), categoryLandingPage: 'hi'})
                 .then(r => {
                     // Create a deep copy of the server response 
@@ -60,18 +53,18 @@ export default class FilterPrompt extends LightningElement {
     } // imperativeApex 
 
     handleCheckBoxGroup(event) {
-      this.selectedFacetDisplay = this.facetDisplay.filter(item => item.facetName === event.target.label)[0];
+      let selectedFacetDisplay = this.facetDisplay.filter(item => item.facetName === event.target.label)[0];
       // If the new list of values from the facet display is less than before it was changed, remove the item from the pillbox
-      if (event.detail.value.length < this.selectedFacetDisplay.selectedFacets.length ) { 
-          this.uncheckedItem = this.selectedFacetDisplay.selectedFacets.filter(e => event.detail.value.includes(e) !== true)[0];      
-          this.facetPillBox = this.facetPillBox.filter( e => e.label.substring(e.label.indexOf(":") + 1).trim() !== this.uncheckedItem);
+      if (event.detail.value.length < selectedFacetDisplay.selectedFacets.length ) { 
+          let uncheckedItem = selectedFacetDisplay.selectedFacets.filter(e => event.detail.value.includes(e) !== true)[0];      
+          this.facetPillBox = this.facetPillBox.filter( e => e.label.substring(e.label.indexOf(":") + 1).trim() !== uncheckedItem);
       } else { // add item to pillbox
           // Since elements are automatically sorted when added into the array, the newly added element can't be retireved from the last index
-          this.newlyAddedItem = event.detail.value.filter(e => this.selectedFacetDisplay.selectedFacets.includes(e) !== true)[0];     
-          this.facetPillBox.push({label: event.target.label + ": " +  this.newlyAddedItem, name: event.target.label});
+          let newlyAddedItem = event.detail.value.filter(e => selectedFacetDisplay.selectedFacets.includes(e) !== true)[0];     
+          this.facetPillBox.push({label: event.target.label + ": " + newlyAddedItem, name: event.target.label});
       }
       console.log(event.detail.value);
-      this.selectedFacetDisplay.selectedFacets = event.detail.value;
+      selectedFacetDisplay.selectedFacets = event.detail.value;
       filterProductDisplay({communityId: communityId, categoryLandingPage: this.categoryLandingPage, 
                             connectApiFacetResultsJson: JSON.stringify(this.connectApiFacetResultsJson), 
                             facetDisplayJson: JSON.stringify(this.facetDisplay)})
@@ -82,6 +75,18 @@ export default class FilterPrompt extends LightningElement {
               .catch(e => {
               console.log(e);
               });
+    }
+
+    // Updates the facet display when a pill box is x'ed out
+    handleItemRemove(event) {
+        const index = event.detail.index;
+        let pillBoxLabel = event.detail.item.label
+        let facetToUncheck =  pillBoxLabel.substring(pillBoxLabel.indexOf(":") + 1).trim();    
+        // Retrieve the Facet Display item to update
+        let selectedFacetDisplay = this.facetDisplay.filter(item => item.facetName === event.detail.item.name)[0];
+        
+        selectedFacetDisplay.selectedFacets =  selectedFacetDisplay.selectedFacets.filter(e => e !== facetToUncheck );
+        this.facetPillBox.splice(index, 1); // Remove the pillbox
     }
 
     get comboBoxOptions() {

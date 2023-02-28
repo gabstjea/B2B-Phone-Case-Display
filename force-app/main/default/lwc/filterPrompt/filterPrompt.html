@@ -11,11 +11,14 @@
 			<lightning-combobox name="packaging" label="Packaging" value={comboBoxValue} options={comboBoxOptions}
 				onchange={onChangeHandler}>
 			</lightning-combobox>
-	
+			
+			<div>
+    			<lightning-pill-container items={facetPillBox} ></lightning-pill-container>
+				
+			</div>
+
 			<lightning-button label="Display product" onclick={imperativeApex}></lightning-button>
-			<p> Product Display test:  </p>
-			<template if:true={productList}>
-					<div class="slds-grid slds-wrap slds-grid_align-space ">
+				<div class="slds-grid slds-wrap slds-grid_align-space ">
 					<template for:each={productList} for:item="item">
 						<div key={item.id} class="slds-col slds-grow-none" style="width: 150px;">
 							<image class="slds-m-bottom_x-small slds-align_absolute-center" src={item.defaultImage.url} alt="phone case"></image>
@@ -32,8 +35,9 @@
 						</div>
 					</template>
 				</div>
-			</template>
-			<p> Product Component:  </p>
+	
+			
+			<div>
 			<lightning-accordion allow-multiple-sections-open active-section-name={activeAccordionSections}>
 				<template for:each={facetDisplay} for:item="item">
 					<lightning-accordion-section key={item.facetName} name={item.facetName} label={item.facetName}>
@@ -47,6 +51,7 @@
 					</lightning-accordion-section>
 				</template>
 			</lightning-accordion>
+			</div>
 
 			
 		</div>

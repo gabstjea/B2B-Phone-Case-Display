@@ -1,31 +1,14 @@
 // Test class for ProductPageController
+// Admin info:
+//     Digital Cases communityID - 0DBDn000000kEsROAU
+//     Gmoney B2B store communityID - 0DBDn000000kDqvOAE 
+//     Gmoney B2B store webID '0ZEDn000000HehLOAS'
 
 @isTest(SeeAllData=true)
 private class ProductPageControllerTest {
     
-  
-    
-    @isTest static void testWebstoreId() {
-        // Admin info
-        // Digital Cases CommunityID - 0DBDn000000kEsROAU
-        // Gmoney B2B store - 0DBDn000000kDqvOAE 
-        // Gmoney B2B store webID '0ZEDn000000HehLOAS'
-        
-        getCommerceIds('engineerb2b@publicis.dev');
-    } // testWebstoreId
-    
-    @isTest static void testConextUser() {
-        String userName = 'phonecasecustomer@phonecase.org';
-        User contextUser = [SELECT id FROM User WHERE Username =: userName LIMIT 1];
-        System.runAs(contextUser) {
-           ProductPageController.createFacetPicklistMap();
-        }       
-    }
-	
-    /** 
-     * Utility method used to retrieve the commerce and websoreId for a context User
-    */ 
-     private static void getCommerceIds(String username) {
+    @isTest static void displayUserCommerceIds() {     
+        String userName = 'engineerb2b@publicis.dev';
         User contextUser = [SELECT id FROM User WHERE Username =: userName LIMIT 1];
         System.runAs(contextUser) {
             ConnectApi.CommunityPage communityPage = ConnectApi.Communities.getCommunities();
@@ -33,9 +16,18 @@ private class ProductPageControllerTest {
             	System.debug('name: ' + cp.name);
             	System.debug('communityId: ' + cp.id);
             	System.debug('Web ID : ' + B2BUtils.resolveCommunityIdToWebstoreId(cp.id));
-                
        		 } 
         } 
-	} // getCommericeIds
-
-}
+    } // displayUserCommerceIds
+    
+    @isTest static void getSearchResultsTest() {
+        String userName = 'phonecasecustomer@phonecase.org';
+        String communityId = '0DBDn000000kDqvOAE';
+        String categoryLandingPage = 'iPhone';
+        User contextUser = [SELECT id FROM User WHERE Username =: userName LIMIT 1];
+        System.runAs(contextUser) {
+           ProductPageController.getSearchResults(communityId, categoryLandingPage);
+        }       
+    } // getProductListTest
+	
+} // ProductPageControllerTest

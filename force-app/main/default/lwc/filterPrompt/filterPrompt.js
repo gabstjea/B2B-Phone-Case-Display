@@ -35,7 +35,8 @@ export default class FilterPrompt extends LightningElement {
               console.log(JSON.parse(JSON.stringify(this.productList)));
               this.connectApiFacetResultsJson = r.facets; 
               this.facetPillBox = [];
-              dummyFacetDisplay({connectApiFacetResultsJson: JSON.stringify(r.facets), categoryLandingPage: 'hi'})
+              console.log(JSON.stringify(r.productsPage.products));
+              dummyFacetDisplay({connectApiFacetResultsJson: JSON.stringify(r.facets), categoryLandingPage: 'void'})
                 .then(r => {
                     // Create a deep copy of the server response 
                     this.facetDisplay = JSON.parse(JSON.stringify(r));

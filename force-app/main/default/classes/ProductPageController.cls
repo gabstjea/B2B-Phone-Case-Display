@@ -49,35 +49,48 @@ public without sharing class ProductPageController {
     /**
      * Returns a map of the Api names used in the facet (IDs) and their associated picklist
      * values as a concatenated string. 
+     * 
+     * Method may be deprecarted if there is a method to retrieve the ConnectApi.ProductSearchResults as
+     * a parameter from the LWC.
      */
-    @AuraEnabled(cacheable=true)
-    public static void createFacetDisplay() {
-        // R: List<Map<String, String>> 
-        // facetApiMap = 
-        // Map<String, String> facetPicklistMap = new Map<String, String>();
-       //  Set<String> facetPicklistValues = new Set<String>();
-       // List<Map<String, String>> listOfMaps = new List<Map<String, String>>();
-            // Obtain the facets for the product
-        //    for (ConnectApi.SearchFacet f : searchResults.facets) {
-        //    	facetApiMap.put(f.displayName, f.nameOrId);
-         //   } // for
-            // Create a map of facets (keys) with available values (picklist value)
-         //  for (String facetApiName: facetApiMap.values()) {
-         //       facetPicklistValues.clear();
-         //       for (ConnectApi.ProductSummary ps : searchResults.productsPage.products) { 
-           //   	  ConnectApi.FieldValue fieldValue = ps.fields.get(facetApiName);
-           //       facetPicklistValues.add(fieldValue.value);
-           //	 	} // for
-                //System.debug('facet name: ' + facetApiName);
-                //System.debug('facetPicklistValues : ' + facetPicklistValues);
-           //     String fieldDisplayName = facetApiMap.get(facetApiName);
-           //     facetPicklistMap.put(fieldDisplayName, 
-           //                              String.join(new List<String>(facetPicklistValues), ' '));
-         //  } // for            
-     
-       	//listOfMaps.add(facetPicklistMap);
-        //System.debug('map  ' +  listOfMaps);
-        //return listOfMaps;
+    @AuraEnabled(cacheable=false)
+    public static List<FacetDisplay> createFacetDisplay(String communityId, String categoryLandingPage) {
+      	ConnectApi.ProductSearchResults searchResults = getSearchResults(communityId, categoryLandingPage);
+        Set<FacetValue> fvSet = new Set<FacetValue>();
+        List<FacetDisplay> fdList = new List<FacetDisplay>();
+	    
+        // maps facet api names (keys) to their display name
+        Map<String, String> facetApiMap = new Map<String, String>(); 
+        
+        // maps facet display names (keys) to their facet info
+        Map<String, ConnectApi.SearchFacet> facetResultsMap = new Map<String, ConnectApi.SearchFacet>();
+        for (ConnectApi.SearchFacet facet : searchResults.facets) {
+            facetApiMap.put(facet.nameOrId, facet.displayName); 
+            facetResultsMap.put(facet.displayName, facet); 
+        } // for
+		
+        // for each field in the ConnectApi.ProductSummary (the product), create a FacetDisplay item
+        for (String facetApiName : facetApiMap.keySet()) {
+            String displayName =  facetApiMap.get(facetApiName);
+            fvSet.clear();
+            for (ConnectApi.ProductSummary ps : searchResults.productsPage.products) {
+                String fieldValue = ps.fields.get(facetApiName).value;
+                // If the field is a multiselect, parse multiselect values into a collection
+                if (facetResultsMap.get(displayName).displayType == ConnectApi.CommerceSearchFacetDisplayType.MultiSelect) {
+                    for (String fieldVal : fieldValue.split(';')) {
+                    	fvSet.add(new FacetValue(fieldVal));
+                    } 
+                } else {
+            		fvSet.add(new FacetValue(fieldValue));
+                }   
+			} // for
+            List<FacetValue> fvList = new List<FacetValue>(fvSet);
+            fdList.add(new FacetDisplay(displayName, fvList));
+        }
+        for (FacetDisplay fd : fdList) {
+        	System.debug(fd);
+        }
+        return fdList;
 	} // createFacetPicklistMap
     
     @AuraEnabled(cacheable=false)

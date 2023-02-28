@@ -7,8 +7,17 @@
 @isTest(SeeAllData=true)
 private class ProductPageControllerTest {
     
+    static String userName; 
+    static String communityId;
+    static String categoryLandingPage;
+    
+    static {
+        userName ='engineerb2b@publicis.dev';
+        communityId = '0DBDn000000kDqvOAE';
+        categoryLandingPage = 'iPhone';
+    }
+    
     @isTest static void displayUserCommerceIds() {     
-        String userName = 'engineerb2b@publicis.dev';
         User contextUser = [SELECT id FROM User WHERE Username =: userName LIMIT 1];
         System.runAs(contextUser) {
             ConnectApi.CommunityPage communityPage = ConnectApi.Communities.getCommunities();
@@ -21,12 +30,16 @@ private class ProductPageControllerTest {
     } // displayUserCommerceIds
     
     @isTest static void getSearchResultsTest() {
-        String userName = 'phonecasecustomer@phonecase.org';
-        String communityId = '0DBDn000000kDqvOAE';
-        String categoryLandingPage = 'iPhone';
         User contextUser = [SELECT id FROM User WHERE Username =: userName LIMIT 1];
         System.runAs(contextUser) {
-           ProductPageController.getSearchResults(communityId, categoryLandingPage);
+           ConnectApi.ProductSearchResults searchResults = ProductPageController.getSearchResults(communityId, categoryLandingPage);
+           if (searchResults != null) {
+               String productId = searchResults.productsPage.products.get(0).id;
+               List<Product2> productSOQL = [SELECT id FROM Product2 WHERE id =: productId LIMIT 1];
+               System.assertEquals(productId, productSOQL[0].id, 'products are not equal');
+           } else {
+               System.assertEquals(true, false, 'Search results is null');
+           } // if
         }       
     } // getProductListTest
 	

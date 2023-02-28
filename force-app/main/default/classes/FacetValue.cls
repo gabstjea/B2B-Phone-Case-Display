@@ -22,5 +22,16 @@ public class FacetValue {
         this.value = value;
 	}
         
+    public Boolean equals(Object obj) {
+        if (obj instanceof FacetValue) {
+            FacetValue fvObj = (FacetValue) obj;
+            return value == fvObj.value;
+        }
+        return false;
+    }
+    
+    public Integer hashCode() {
+        return value.hashCode();
+    }
     
 }

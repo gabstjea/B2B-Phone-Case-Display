@@ -39,11 +39,10 @@ public without sharing class ProductPageController {
      * 
      * @param connectApiFacetResultsJson - the serialized ConnectApi.SearchFacet results from the product search results
      */
-    private static Map<String, ConnectFacetResDeserializer> createFacetResultsMap(String connectApiFacetResultsJson) {
+    private static Map<String, ConnectApi.SearchFacet> createFacetResultsMap(List<ConnectApi.SearchFacet> searchFacet) {
         // Recieved JSON parser errors when trying to cast directly into List<ConnectApi.SearchFacet>, so a custom class is used
-        List<ConnectFacetResDeserializer> facetResults = ConnectFacetResDeserializer.parse(connectApiFacetResultsJson);
-        Map<String, ConnectFacetResDeserializer> facetResultsMap = new Map<String, ConnectFacetResDeserializer>();
-        for (ConnectFacetResDeserializer facet : facetResults) {
+        Map<String, ConnectApi.SearchFacet> facetResultsMap = new Map<String, ConnectApi.SearchFacet>();
+        for (ConnectApi.SearchFacet facet : searchFacet) {
             facetResultsMap.put(facet.displayName, facet);
 		}
         return facetResultsMap;
@@ -99,7 +98,6 @@ public without sharing class ProductPageController {
     public static List<FacetDisplay> dummyFacetDisplay(String connectApiFacetResultsJson, String categoryLandingPage) {
   	
         List<FacetDisplay> fdList = new List<FacetDisplay>();
-    
         FacetDisplay brandFd = new FacetDisplay('Brand',
                                            new List<FacetValue> {
                                                new FacetValue('Apple')
@@ -152,11 +150,13 @@ public without sharing class ProductPageController {
      */
     @AuraEnabled(cacheable=false)
     public static List<ConnectApi.ProductSummary> filterProductDisplay(String communityId, String categoryLandingPage, 
-                                                                       String connectApiFacetResultsJson, 
                                                                        String facetDisplayJson) {
-        List<FacetDisplay> facetDisplay = FacetDisplay.parseJson(facetDisplayJson);                      
-     	Map<String, ConnectFacetResDeserializer> facetResultsMap = createFacetResultsMap(connectApiFacetResultsJson);
+        
+        ConnectApi.ProductSearchResults searchResults = getSearchResults(communityId, categoryLandingPage);
         String webstoreId = B2BUtils.resolveCommunityIdToWebstoreId(communityId);  
+		
+        List<FacetDisplay> facetDisplay = FacetDisplay.parseJson(facetDisplayJson);                      
+     	Map<String, ConnectApi.SearchFacet> facetResultsMap = createFacetResultsMap(searchResults.facets);
         // Prepare the search results                                                                   
         ConnectApi.ProductSearchInput sInput = new ConnectApi.ProductSearchInput();
         ConnectApi.DistinctValueRefinementInput rInput;
@@ -165,13 +165,13 @@ public without sharing class ProductPageController {
         // Refine the search input
         for (FacetDisplay fd : facetDisplay) {
             rInput = new ConnectApi.DistinctValueRefinementInput();
-            ConnectFacetResDeserializer facetInfo = facetResultsMap.get(fd.facetName);
+            ConnectApi.SearchFacet facetInfo = facetResultsMap.get(fd.facetName);
             String apiName = facetInfo.nameOrId;         
-            if (facetInfo.attributeType == 'Custom') {
+            if (facetInfo.attributeType == ConnectApi.CommerceSearchAttributeType.Custom) {
             	rInput.attributeType = ConnectApi.CommerceSearchAttributeType.Custom;
-            } else if (facetInfo.attributeType == 'Standard') {
+            } else if (facetInfo.attributeType == ConnectApi.CommerceSearchAttributeType.Standard) {
                 rInput.attributeType = ConnectApi.CommerceSearchAttributeType.Standard;
-            } else if (facetInfo.attributeType == 'ProductAttribute') {
+            } else if (facetInfo.attributeType == ConnectApi.CommerceSearchAttributeType.ProductAttribute) {
                 rInput.attributeType = ConnectApi.CommerceSearchAttributeType.ProductAttribute;
             } else {
                 rInput.attributeType = ConnectApi.CommerceSearchAttributeType.ProductCategory;

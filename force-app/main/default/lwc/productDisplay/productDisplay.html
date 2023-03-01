@@ -8,41 +8,22 @@
 			</lightning-combobox>
 
 			<div>
-    			<lightning-pill-container items={facetPillBox} onitemremove={handleItemRemove} ></lightning-pill-container>
+    			<lightning-pill-container items={facetPillBox} onitemremove={handleItemRemove}></lightning-pill-container>
 			</div>
 
+
 			<lightning-button label="Display product" onclick={imperativeApex}></lightning-button>
-				<div class="slds-grid slds-wrap slds-grid_align-space ">
-					<template for:each={productList} for:item="item">
-						<div key={item.id} class="slds-col slds-grow-none" style="width: 150px;">
-							<image class="slds-m-bottom_x-small slds-align_absolute-center" src={item.defaultImage.url} alt="phone case"></image>
-							<p class="slds-align_absolute-center slds-text-heading_small slds-line-clamp_x-small" title={item.name}> 
-							   {item.name} 
-							</p>
-							<template if:true={item.prices}>
-								<p class="slds-m-bottom_large slds-align_absolute-center slds-text-heading_medium"><b>${item.prices.unitPrice}</b></p>
-							</template>
-							<template if:false={item.prices}>
-								<p class="slds-m-bottom_large slds-align_absolute-center slds-text-heading_small"><b>Price unavailable</b></p>
-							</template>
-						</div>
-					</template>
-				</div>	
-			
 			<div>
-			<lightning-accordion allow-multiple-sections-open active-section-name={activeAccordionSections}>
-				<template for:each={facetDisplay} for:item="item">
-					<lightning-accordion-section key={item.facetName} name={item.facetName} label={item.facetName}>
-						<lightning-checkbox-group  name={item.facetName} 
-							label={item.facetName} 
-							options={item.facetValues}
-							value={item.selectedFacets}
-							variant="label-hidden"
-							onchange={handleCheckBoxGroup}>
-						</lightning-checkbox-group>
-					</lightning-accordion-section>
-				</template>
-			</lightning-accordion>
+				<c-list-of-products product-list={productList}></c-list-of-products>
+			</div>
+			<div>
+				<c-filter-checkbox-display 
+					facet-display={facetDisplay} 
+					active-accordion-sections={activeAccordionSections}
+					facet-pill-box={facetPillBox} 
+					category-landing-page={categoryLandingPage}
+					oncheckboxselect={handleCheckboxSelect}>
+				</c-filter-checkbox-display>
 			</div>
 
 			

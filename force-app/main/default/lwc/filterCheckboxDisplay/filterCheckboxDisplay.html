@@ -1,3 +1,21 @@
 <template>
-    
+
+    <lightning-accordion active-section-name="filterProducts">
+        <lightning-accordion-section name="filterProducts" label="Filter Products">
+            
+        </lightning-accordion-section>
+	</lightning-accordion>
+    <lightning-accordion allow-multiple-sections-open active-section-name={activeAccordionSections}>
+				<template for:each={facetDisplay} for:item="item">
+					<lightning-accordion-section key={item.facetName} name={item.facetName} label={item.facetName}>
+						<lightning-checkbox-group  name={item.facetName} 
+							label={item.facetName} 
+							options={item.facetValues}
+							value={item.selectedFacets}
+							variant="label-hidden"
+							onchange={handleCheckBoxGroup}>
+						</lightning-checkbox-group>
+					</lightning-accordion-section>
+				</template>
+	</lightning-accordion>
 </template>

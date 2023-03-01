@@ -21,7 +21,7 @@ public class FacetValue {
     	this.label = value;
         this.value = value;
 	}
-        
+    
     public Boolean equals(Object obj) {
         if (obj instanceof FacetValue) {
             FacetValue fvObj = (FacetValue) obj;

@@ -1,3 +1,9 @@
-import { LightningElement } from 'lwc';
+import { LightningElement, api } from 'lwc';
 
-export default class ListOfProducts extends LightningElement {}
+export default class listOfProducts extends LightningElement {
+    @api productList;
+    
+    connectedCallback() {
+        console.log('listOfProducts Initialized');
+    } // connectedCallback
+}

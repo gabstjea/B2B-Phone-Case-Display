@@ -7,9 +7,8 @@
 				onchange={handleChange}>
 			</lightning-combobox>
 
-			<!-- Parent.js -->
 			<div>
-    			<lightning-pill-container items={facetPillBox} onitemremove={handleItemRemove}></lightning-pill-container>
+    			<lightning-pill-container items={facetPillBox} onitemremove={handlePillboxItemRemove}></lightning-pill-container>
 			</div>
 
 			<lightning-button label="Display product" onclick={imperativeApex}></lightning-button>
@@ -22,7 +21,8 @@
 					active-accordion-sections={activeAccordionSections}
 					facet-pill-box={facetPillBox} 
 					category-landing-page={categoryLandingPage}
-					oncheckboxselect={handleCheckboxSelect}>
+					oncheckboxselect={handleFilterCheckboxDisplay}
+					onremovepillevent={handleFilterCheckboxDisplay}>
 				</c-filter-checkbox-display>
 			</div>
 

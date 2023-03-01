@@ -2,8 +2,6 @@ import { LightningElement, api, track } from 'lwc';
 import communityId from '@salesforce/community/Id';
 import getSearchResults from '@salesforce/apex/ProductPageController.getSearchResults';
 import createFacetDisplay from '@salesforce/apex/ProductPageController.createFacetDisplay';
-// import dummyFacetDisplay from '@salesforce/apex/ProductPageController.dummyFacetDisplay';
-import  filterProductDisplay from '@salesforce/apex/ProductPageController.filterProductDisplay';
 
 // This component serves as a testing ground for the product display and listing component
 
@@ -13,12 +11,11 @@ export default class FilterPrompt extends LightningElement {
     @api facetDisplay; // Stores a deep copy of the List<FacetDisplay> object from the createFacetDisplay Apex method 
     @api activeAccordionSections = [];
     @api categoryLandingPage = 'iPhone';
+    @api facetPillBox = [];
     clpComboboxOptions =  [
         {label: "iPhone", value: "iPhone"},
         {label: "Samsung", value: "Samsung"},
       ];
-    
-   @api facetPillBox = [];
 
    imperativeApex() {
          getSearchResults({communityId: communityId, categoryLandingPage: this.categoryLandingPage})
@@ -44,39 +41,23 @@ export default class FilterPrompt extends LightningElement {
                 })
     } // imperativeApex 
 
-    // Updates the facet display when a pill box is x'ed out
-    handleItemRemove(event) {
-        const index = event.detail.index;
-        let pillBoxLabel = event.detail.item.label
-        let facetToUncheck =  pillBoxLabel.substring(pillBoxLabel.indexOf(":") + 1).trim();    
-        // Retrieve the Facet Display item to update
-        let selectedFacetDisplay = this.facetDisplay.filter(item => item.facetName === event.detail.item.name)[0];
-        
-        selectedFacetDisplay.selectedFacets =  selectedFacetDisplay.selectedFacets.filter(e => e !== facetToUncheck );
-        this.facetPillBox.splice(index, 1); // Remove the pillbox  
-        filterProductDisplay({communityId: communityId, categoryLandingPage: this.categoryLandingPage, 
-                            facetDisplayJson: JSON.stringify(this.facetDisplay)})
-              .then(r => {
-                console.log(r);
-                this.productList = r;      
-              })
-              .catch(e => {
-                console.log(e);
-              });
-    } // handleItemRemove
+ 
+    handleChange(event) {
+      this.categoryLandingPage = event.target.value;
+    }
 
-    handleCheckboxSelect(event) {
-      //this.productList = event.detail;
-      console.log('child to parent');
-      console.log(event.detail.facetPillBox);
-       console.log('child ended');
+    handleFilterCheckboxDisplay(event) {
+      console.log(event.detail.facetDisplay);
+      console.log(JSON.parse(JSON.stringify(event.detail.facetPillBox)));
+      console.log(event.detail.filterResults);
       this.facetDisplay = event.detail.facetDisplay;
       this.facetPillBox = event.detail.facetPillBox;
       this.productList = event.detail.filterResults;
     }
 
-    handleChange(event) {
-      this.categoryLandingPage = event.target.value;
+    handlePillboxItemRemove(event) {
+      console.log('Pillbox Item remove');
+      this.template.querySelector('c-filter-checkbox-display').removePillBoxItem(event);
     }
 
     connectedCallback() {

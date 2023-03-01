@@ -4,13 +4,13 @@
 						
 			
 			<lightning-combobox name="categoryLandingPage" label="Category Landing Page" value={categoryLandingPage} options={clpComboboxOptions}
-				onchange={onChangeHandler}>
+				onchange={handleChange}>
 			</lightning-combobox>
 
+			<!-- Parent.js -->
 			<div>
     			<lightning-pill-container items={facetPillBox} onitemremove={handleItemRemove}></lightning-pill-container>
 			</div>
-
 
 			<lightning-button label="Display product" onclick={imperativeApex}></lightning-button>
 			<div>

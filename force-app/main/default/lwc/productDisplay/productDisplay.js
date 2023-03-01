@@ -69,9 +69,14 @@ export default class FilterPrompt extends LightningElement {
       //this.productList = event.detail;
       console.log('child to parent');
       console.log(event.detail.facetPillBox);
+       console.log('child ended');
       this.facetDisplay = event.detail.facetDisplay;
       this.facetPillBox = event.detail.facetPillBox;
       this.productList = event.detail.filterResults;
+    }
+
+    handleChange(event) {
+      this.categoryLandingPage = event.target.value;
     }
 
     connectedCallback() {

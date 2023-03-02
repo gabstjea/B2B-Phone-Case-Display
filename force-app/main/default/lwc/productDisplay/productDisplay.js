@@ -1,7 +1,8 @@
-import { LightningElement, api, track } from 'lwc';
+import { LightningElement, api, wire } from 'lwc';
 import communityId from '@salesforce/community/Id';
 import getSearchResults from '@salesforce/apex/ProductPageController.getSearchResults';
 import createFacetDisplay from '@salesforce/apex/ProductPageController.createFacetDisplay';
+import { CurrentPageReference } from 'lightning/navigation';
 
 // This component serves as a testing ground for the product display and listing component
 
@@ -10,15 +11,23 @@ export default class FilterPrompt extends LightningElement {
     @api productList;
     @api facetDisplay; // Stores a deep copy of the List<FacetDisplay> object from the createFacetDisplay Apex method 
     @api activeAccordionSections = [];
-    @api categoryLandingPage = 'iPhone';
+    @api categoryLandingPage = '0ZGDn000000M345OAC';
     @api facetPillBox = [];
     isFacetAdded = false;
-    clpComboboxOptions =  [
-        {label: "iPhone", value: "iPhone"},
-        {label: "Samsung", value: "Samsung"},
-      ];
 
-   imperativeApex() {
+
+
+    // Obtains the url of the current page
+    @wire(CurrentPageReference)
+    getPageReferenceParameters(currentPageReference) {
+       console.log('current page');
+       if (currentPageReference.attributes.recordId !== undefined) {
+          this.categoryLandingPage = currentPageReference.attributes.recordId;
+          this.refreshProductDisplay();
+        } // if
+    }
+
+   refreshProductDisplay() {
          getSearchResults({communityId: communityId, categoryLandingPage: this.categoryLandingPage})
             .then(r => {
               this.productList = r.productsPage.products;
@@ -41,12 +50,9 @@ export default class FilterPrompt extends LightningElement {
                       this.activeAccordionSections[i] = this.facetDisplay[i].facetName;
                     }
                 })
-    } // imperativeApex 
+    } // refreshProductDisplay 
 
- 
-    handleChange(event) {
-      this.categoryLandingPage = event.target.value;
-    }
+
 
     handleFilterCheckboxDisplay(event) {
       console.log(event.detail.facetDisplay);

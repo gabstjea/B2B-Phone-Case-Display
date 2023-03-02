@@ -10,11 +10,9 @@ export default class FilterPrompt extends LightningElement {
    
     @api productList;
     @api facetDisplay; // Stores a deep copy of the List<FacetDisplay> object from the createFacetDisplay Apex method 
-    @api activeAccordionSections = [];
     @api categoryLandingPage = '0ZGDn000000M345OAC';
     @api facetPillBox = [];
     isFacetAdded = false;
-
     isLoading = false;
 
     // Obtains the url of the current page
@@ -31,7 +29,6 @@ export default class FilterPrompt extends LightningElement {
          await getSearchResults({communityId: communityId, categoryLandingPage: this.categoryLandingPage})
             .then(r => {
               this.productList = r.productsPage.products;
-              console.log(JSON.parse(JSON.stringify(this.productList)));
               this.facetPillBox = [];
               this.isFacetAdded = false;
             })
@@ -40,18 +37,14 @@ export default class FilterPrompt extends LightningElement {
             });
 
          await createFacetDisplay({communityId: communityId, categoryLandingPage: this.categoryLandingPage})
-                .then(r => {
-                    // Create a deep copy of the server response 
-                    this.facetDisplay = JSON.parse(JSON.stringify(r));
-                    console.log(JSON.parse(JSON.stringify(this.facetDisplay)));
-                    // Expand the accordian section whose names appear in the array
-                    this.activeAccordionSections = [];
-                    for (let i = 0; i < this.facetDisplay.length; i++) {
-                      this.activeAccordionSections[i] = this.facetDisplay[i].facetName;
-                    }
-                })
-          this.finishedLoading();
-
+            .then(r => {
+                // Create a deep copy of the server response 
+                this.facetDisplay = JSON.parse(JSON.stringify(r));               
+            })
+            .catch(e => {
+              console.log(e);
+            });
+        this.finishedLoading();
     } // refreshProductDisplay 
 
     finishedLoading() {

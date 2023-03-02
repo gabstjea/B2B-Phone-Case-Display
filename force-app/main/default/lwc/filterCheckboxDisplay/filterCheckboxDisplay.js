@@ -4,7 +4,6 @@ import filterProductDisplay from '@salesforce/apex/ProductPageController.filterP
 
 export default class filterCheckboxDisplay extends LightningElement {
     @api facetDisplay;
-    @api activeAccordionSections;
     @api categoryLandingPage;
     @api facetPillBox;
 

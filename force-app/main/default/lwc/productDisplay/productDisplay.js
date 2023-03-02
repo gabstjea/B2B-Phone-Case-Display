@@ -12,6 +12,7 @@ export default class FilterPrompt extends LightningElement {
     @api activeAccordionSections = [];
     @api categoryLandingPage = 'iPhone';
     @api facetPillBox = [];
+    isFacetAdded = false;
     clpComboboxOptions =  [
         {label: "iPhone", value: "iPhone"},
         {label: "Samsung", value: "Samsung"},
@@ -23,6 +24,7 @@ export default class FilterPrompt extends LightningElement {
               this.productList = r.productsPage.products;
               console.log(JSON.parse(JSON.stringify(this.productList)));
               this.facetPillBox = [];
+              this.isFacetAdded = false;
             })
             .catch(e => {
               console.log(e);
@@ -53,6 +55,11 @@ export default class FilterPrompt extends LightningElement {
       this.facetDisplay = event.detail.facetDisplay;
       this.facetPillBox = event.detail.facetPillBox;
       this.productList = event.detail.filterResults;
+      if (this.facetPillBox.length === 0) {
+        this.isFacetAdded = false;
+      } else {
+        this.isFacetAdded = true;
+      }
     }
 
     handlePillboxItemRemove(event) {

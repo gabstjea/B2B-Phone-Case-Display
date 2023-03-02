@@ -8,6 +8,9 @@
 			</lightning-combobox>
 
 			<div>
+				<template if:true={isFacetAdded}>
+					<lightning-button label="Clear All" variant="base" onclick={imperativeApex}></lightning-button>>
+				</template>
     			<lightning-pill-container items={facetPillBox} onitemremove={handlePillboxItemRemove}></lightning-pill-container>
 			</div>
 

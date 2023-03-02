@@ -2,6 +2,9 @@
 	<lightning-card>
 		<div class="slds-m-around_medium">
 						
+			<template if:true={isLoading}>
+    			<lightning-spinner variant="brand" size="large"> </lightning-spinner>
+			</template>
 			<div>
 				<template if:true={isFacetAdded}>
 					<lightning-button label="Clear All" variant="base" onclick={refreshProductDisplay}></lightning-button>>

@@ -15,20 +15,20 @@ export default class FilterPrompt extends LightningElement {
     @api facetPillBox = [];
     isFacetAdded = false;
 
-
+    isLoading = false;
 
     // Obtains the url of the current page
     @wire(CurrentPageReference)
     getPageReferenceParameters(currentPageReference) {
-       console.log('current page');
+       this.isLoading = true;
        if (currentPageReference.attributes.recordId !== undefined) {
           this.categoryLandingPage = currentPageReference.attributes.recordId;
           this.refreshProductDisplay();
         } // if
     }
 
-   refreshProductDisplay() {
-         getSearchResults({communityId: communityId, categoryLandingPage: this.categoryLandingPage})
+   async refreshProductDisplay() {
+         await getSearchResults({communityId: communityId, categoryLandingPage: this.categoryLandingPage})
             .then(r => {
               this.productList = r.productsPage.products;
               console.log(JSON.parse(JSON.stringify(this.productList)));
@@ -39,7 +39,7 @@ export default class FilterPrompt extends LightningElement {
               console.log(e);
             });
 
-         createFacetDisplay({communityId: communityId, categoryLandingPage: this.categoryLandingPage})
+         await createFacetDisplay({communityId: communityId, categoryLandingPage: this.categoryLandingPage})
                 .then(r => {
                     // Create a deep copy of the server response 
                     this.facetDisplay = JSON.parse(JSON.stringify(r));
@@ -50,8 +50,13 @@ export default class FilterPrompt extends LightningElement {
                       this.activeAccordionSections[i] = this.facetDisplay[i].facetName;
                     }
                 })
+          this.finishedLoading();
+
     } // refreshProductDisplay 
 
+    finishedLoading() {
+      this.isLoading = false;
+    }
 
 
     handleFilterCheckboxDisplay(event) {

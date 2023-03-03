@@ -18,8 +18,8 @@ export default class FilterPrompt extends LightningElement {
     // Obtains the url of the current page
     @wire(CurrentPageReference)
     getPageReferenceParameters(currentPageReference) {
-       this.isLoading = true;
        if (currentPageReference.attributes.recordId !== undefined) {
+          this.isLoading = true;
           this.categoryLandingPage = currentPageReference.attributes.recordId;
           this.refreshProductDisplay();
         } // if

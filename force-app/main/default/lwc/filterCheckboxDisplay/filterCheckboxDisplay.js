@@ -6,8 +6,11 @@ export default class filterCheckboxDisplay extends LightningElement {
     @api facetDisplay;
     @api categoryLandingPage;
     @api facetPillBox;
+    isLoading = false;
 
-    handleCheckboxGroup(event) {
+
+    async handleCheckboxGroup(event) {
+      this.isLoading = true;
       let facetPillBox = JSON.parse(JSON.stringify(this.facetPillBox));
       let facetDisplay = JSON.parse(JSON.stringify(this.facetDisplay))
       let selectedFacetDisplay = facetDisplay.filter(item => item.facetName === event.target.label)[0];
@@ -17,13 +20,11 @@ export default class filterCheckboxDisplay extends LightningElement {
       } else { // add item to pillbox
           // Since elements are automatically sorted when added into the array, the newly added element can't be retireved from the last index
          let newlyAddedItem = event.detail.value.filter(e => selectedFacetDisplay.selectedFacets.includes(e) !== true)[0];  
-         if (newlyAddedItem !== undefined)  { // may result in undefined if the user clicks the box too fast
-             facetPillBox.push({label: event.target.label + ": " + newlyAddedItem, name: event.target.label});
-         } 
+         facetPillBox.push({label: event.target.label + ": " + newlyAddedItem, name: event.target.label});
       }
 
       selectedFacetDisplay.selectedFacets = event.detail.value;
-      filterProductDisplay({communityId: communityId, categoryLandingPage: this.categoryLandingPage,  
+      await filterProductDisplay({communityId: communityId, categoryLandingPage: this.categoryLandingPage,  
                             facetDisplayJson: JSON.stringify(facetDisplay)})
               .then(r => {
                 const checkboxSelectEvent = new CustomEvent("checkboxselect", {
@@ -34,6 +35,7 @@ export default class filterCheckboxDisplay extends LightningElement {
               .catch(e => {
                console.log(e);
               });
+      this.finishedLoading();
     } // handleCheckBoxGroup
 
     /** 
@@ -42,7 +44,8 @@ export default class filterCheckboxDisplay extends LightningElement {
      * This method is invoked by productDisplay.js
      */
     @api
-    removePillBoxItem(event) {
+    async removePillBoxItem(event) {
+        this.isLoading = true;
         let facetDisplay = JSON.parse(JSON.stringify(this.facetDisplay));
         let facetPillBox = JSON.parse(JSON.stringify(this.facetPillBox));
 
@@ -54,7 +57,7 @@ export default class filterCheckboxDisplay extends LightningElement {
         
         selectedFacetDisplay.selectedFacets =  selectedFacetDisplay.selectedFacets.filter(e => e !== facetToUncheck );
         facetPillBox.splice(index, 1); // Remove the pillbox  
-        filterProductDisplay({communityId: communityId, categoryLandingPage: this.categoryLandingPage, 
+        await filterProductDisplay({communityId: communityId, categoryLandingPage: this.categoryLandingPage, 
                             facetDisplayJson: JSON.stringify(facetDisplay)})
               .then(r => {
                 console.log(r);
@@ -66,6 +69,16 @@ export default class filterCheckboxDisplay extends LightningElement {
               .catch(e => {
                 console.log(e);
               });
+         this.finishedLoading();
     } // handlePIllBoxItemRemove
+
+    async updateFacetDisplay() {
+      
+    }
+
+    finishedLoading() {
+      this.isLoading = false;
+    }
+
 
 }

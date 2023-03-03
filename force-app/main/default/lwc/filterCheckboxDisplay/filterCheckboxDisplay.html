@@ -1,10 +1,9 @@
 <template>
 
-    <lightning-accordion active-section-name="filterProducts">
-        <lightning-accordion-section name="filterProducts" label="Filter Products">
-            
-        </lightning-accordion-section>
-	</lightning-accordion>
+   <template if:true={isLoading}>
+    	<lightning-spinner variant="brand" size="large"> </lightning-spinner>
+	</template>
+	
        <ul>
         <li>
         <template for:each={facetDisplay} for:item="item">

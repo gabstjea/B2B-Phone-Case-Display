@@ -9,8 +9,8 @@
 			<div class="slds-col 
 						slds-large-size_1-of-3
 						slds-medium-size_1-of-3
-						slds-small-size_1-of-1
-			">
+						slds-small-size_1-of-1">
+
 				<c-filter-checkbox-display 
 					facet-display={facetDisplay} 
 					facet-pill-box={facetPillBox} 
@@ -23,17 +23,18 @@
 			<div class="slds-col 
 						slds-large-size_2-of-3
 						slds-medium-size_2-of-3
-						slds-small-size_1-of-1
-			">			
+						slds-small-size_1-of-1">
+
 				<div class="slds-m-around_medium">
 					<template if:true={isFacetAdded}>
 						<lightning-button label="Clear All" variant="base" onclick={refreshProductDisplay}></lightning-button>>
 					</template>
     				<lightning-pill-container items={facetPillBox} onitemremove={handlePillboxItemRemove}></lightning-pill-container>
 				</div>
+				
 				<c-list-of-products product-list={productList}></c-list-of-products>
+			
 			</div>
-
 		</div>
 	</lightning-card>
 </template>

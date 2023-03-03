@@ -19,8 +19,6 @@ private class ProductPageControllerTest {
         contextUser = [SELECT id FROM User WHERE Username =: userName LIMIT 1];
     }
     
-   
-   
     @isTest static void displayUserCommerceIds() {     
         System.runAs(contextUser) {
             ConnectApi.CommunityPage communityPage = ConnectApi.Communities.getCommunities();
@@ -35,13 +33,25 @@ private class ProductPageControllerTest {
     
    @isTest static void getSearchResultsTest() {
         System.runAs(contextUser) {
-           ConnectApi.ProductSearchResults searchResults = ProductPageController.getSearchResults(communityId, categoryLandingPage);
+           ConnectApi.ProductSearchResults searchResults = ProductPageController.getSearchResults(communityId,
+                                                                                                  categoryLandingPage);
+           List<ConnectApi.ProductSummary> productSummaries = searchResults.productsPage.products;
+		   Set<String> productId = new Set<String>();
            if (searchResults != null) {
-               String productId = searchResults.productsPage.products.get(0).id;
-               List<Product2> productSOQL = [SELECT id FROM Product2 WHERE id =: productId LIMIT 1];
-               System.assertEquals(productId, productSOQL[0].id, 'products do not match');
+               for (ConnectApi.ProductSummary ps : productSummaries) {
+                   productId.add(ps.id);
+			   } // for
+            
+               List<Product2> productSOQL = [SELECT id FROM Product2 WHERE id =: productId];
+               if (productSOQL.size() == productSummaries.size()) {
+                   System.debug('SOQL query product: ' + productSOQL);
+                   System.debug('getSearchResults method: ' + productSummaries);
+                   System.assert(false,'Query mismatch: System didn\'t retrieve all queried products from the' +
+                                   'ConnectApi search results');
+               }
+             
            } else {
-               System.assertEquals(true, false, 'Search results is null');
+               System.assert(false, 'Search results is null');
            } // if
         }       
     } // getSearchResultsTest
@@ -68,8 +78,7 @@ private class ProductPageControllerTest {
                 System.assert(connectSearchFacet != null, 
                               'The facet: ' + fd.facetName + 'is not on the product');
                 String fdValuesJson = JSON.serialize(fd.facetValues);
-                System.debug(fdValuesJson);
-            
+                            
                 // For each product search result, check if the facet display contains the field value for all facets on the product
                 for (ConnectApi.ProductSummary ps : productSummaries) {
                     String connectFeildValue = ps.fields.get(apiName).value;

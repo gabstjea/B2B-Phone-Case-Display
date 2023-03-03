@@ -12,7 +12,7 @@ export default class filterCheckboxDisplay extends LightningElement {
     async handleCheckboxGroup(event) {
       this.isLoading = true;
       let facetPillBox = JSON.parse(JSON.stringify(this.facetPillBox));
-      let facetDisplay = JSON.parse(JSON.stringify(this.facetDisplay))
+      let facetDisplay = JSON.parse(JSON.stringify(this.facetDisplay));
       let selectedFacetDisplay = facetDisplay.filter(item => item.facetName === event.target.label)[0];
       if (event.detail.value.length < selectedFacetDisplay.selectedFacets.length ) { 
           let uncheckedItem = selectedFacetDisplay.selectedFacets.filter(e => event.detail.value.includes(e) !== true)[0];      

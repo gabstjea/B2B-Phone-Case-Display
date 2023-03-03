@@ -15,7 +15,7 @@
 */                        
 
 public without sharing class ProductPageController {
-        
+     
     /**
      * Returns the search results from the ConnectApi Commerce Search class.
      * 
@@ -24,13 +24,10 @@ public without sharing class ProductPageController {
      */
     @AuraEnabled(cacheable=false)
     public static ConnectApi.ProductSearchResults getSearchResults(String communityId, String categoryLandingPage) {
-        // String webstoreId = '0ZEDn000000HehLOAS';
-        // CommunityID = '0DBDn000000kDqvOAE';
         String webstoreId = B2BUtils.resolveCommunityIdToWebstoreId(communityId);
         ConnectApi.ProductSearchInput input = new ConnectApi.ProductSearchInput();
-        input.searchTerm = categoryLandingPage;
+        input.categoryId = categoryLandingPage;
         input.includePrices = True;
-        input.includeQuantityRule = True;
         ConnectApi.ProductSearchResults searchResults = ConnectApi.CommerceSearch.searchProducts(webstoreId, null, input);
         return searchResults;
 	} // getSearchResults
@@ -88,64 +85,14 @@ public without sharing class ProductPageController {
             List<FacetValue> fvList = new List<FacetValue>(fvSet);
             fdList.add(new FacetDisplay(displayName, fvList));
         }
-        for (FacetDisplay fd : fdList) {
-        	System.debug(fd);
-        }
         return fdList;
 	} // createFacetPicklistMap
-    
-    @AuraEnabled(cacheable=false)
-    public static List<FacetDisplay> dummyFacetDisplay(String connectApiFacetResultsJson, String categoryLandingPage) {
-  	
-        List<FacetDisplay> fdList = new List<FacetDisplay>();
-        FacetDisplay brandFd = new FacetDisplay('Brand',
-                                           new List<FacetValue> {
-                                               new FacetValue('Apple')
-                                           });
-        FacetDisplay productLineFd = new FacetDisplay('Product Line',
-                                           new List<FacetValue> {
-                                               new FacetValue('Defender Series'),
-                                               new FacetValue('Commuter Series'),  
-                                               new FacetValue('Lumen Series')
-                                           });
-     
-        FacetDisplay compatibilityFd = new FacetDisplay('Compatibility',
-                                           new List<FacetValue> {
-                                               new FacetValue('iPhone 13'),
-                                               new FacetValue('iPhone 14')                                              
-                                           });
-        FacetDisplay featuresFd = new FacetDisplay('Features',
-                                           new List<FacetValue> {
-                                               new FacetValue('3X Tested To Military Standard'),
-                                               new FacetValue('4X Tested To Military Standard'),                                          
-                                               new FacetValue('Antimicrobial')     
-                                           });
-       FacetDisplay colorFd = new FacetDisplay('Color',
-                                           new List<FacetValue> {
-                                               new FacetValue('Blue'),
-                                               new FacetValue('Black'),   
-                                               new FacetValue('Pink')
-                                           });
-        FacetDisplay packagingFd = new FacetDisplay('Packaging',
-                                           new List<FacetValue> {
-                                               new FacetValue('Pro-Pack'),
-                                               new FacetValue('Retail')                                              
-                                           });
-        fdList.add(brandFd);
-        fdList.add(productLineFd);
-        fdList.add(compatibilityFd);
-        fdList.add(featuresFd);
-        fdList.add(colorFd);
-        fdList.add(packagingFd);                                       
-        return fdList;
-    }
     
    /**
      * Adds refinements to a search key so that it can return a filtered list of results. 
      * 
      * @param communityId - the ID of the experience cloud site that the context user is accessing
      * @param categoryLandingPage - the literals used to generate a search result
-     * @param connectApiFacetResultsJson - the serialized ConnectApi.SearchFacet results from the product search results
 	 * @param facetDisplayJson - the list of facet display objects from the product filter list
      */
     @AuraEnabled(cacheable=false)
@@ -161,7 +108,8 @@ public without sharing class ProductPageController {
         ConnectApi.ProductSearchInput sInput = new ConnectApi.ProductSearchInput();
         ConnectApi.DistinctValueRefinementInput rInput;
 		List<ConnectApi.RefinementInput> rInputList = new List<ConnectApi.RefinementInput>();     
-		sInput.searchTerm = categoryLandingPage;     
+		sInput.categoryId = categoryLandingPage;  
+        sinput.includePrices = True;
         // Refine the search input
         for (FacetDisplay fd : facetDisplay) {
             rInput = new ConnectApi.DistinctValueRefinementInput();
@@ -182,6 +130,7 @@ public without sharing class ProductPageController {
 			rInputList.add(rInput);
         } // for
 		sInput.refinements = rInputList;
+                                                                          
 		ConnectApi.ProductSearchResults rSearchResults = ConnectApi.CommerceSearch.searchProducts(webstoreId, null, sInput);
         return rSearchResults.productsPage.products;
     } // filterSearch
